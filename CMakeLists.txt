@@ -4,6 +4,11 @@ project(Vulkan2D VERSION 1.0.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# MSVCでUTF-8ソースファイルをサポート
+if(MSVC)
+    add_compile_options(/utf-8)
+endif()
+
 # Vulkan SDK
 find_package(Vulkan REQUIRED)
 
