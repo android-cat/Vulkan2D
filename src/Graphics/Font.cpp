@@ -88,6 +88,8 @@ Font::Font(VulkanContext* context, const std::string& fontPath, uint32_t fontSiz
 
     // Calculate line height
     m_LineHeight = static_cast<float>(m_FTFace->size->metrics.height >> 6);
+    m_Ascent = static_cast<float>(m_FTFace->size->metrics.ascender >> 6);
+    m_Descent = static_cast<float>(m_FTFace->size->metrics.descender >> 6);
 
     LoadGlyphs();
     CreateAtlas();
@@ -121,8 +123,8 @@ void Font::LoadGlyphs() {
         characters.push_back(c);
     }
     
-    // Common Kanji (4E00-9FFF) - load a subset for performance
-    for (uint32_t c = 0x4E00; c <= 0x4FFF; c++) {
+    // Common Kanji (4E00-9FFF)
+    for (uint32_t c = 0x4E00; c <= 0x9FFF; c++) {
         characters.push_back(c);
     }
 
@@ -168,7 +170,7 @@ void Font::CreateAtlas() {
     for (uint32_t c = 0x30A0; c <= 0x30FF; c++) {
         characters.push_back(c);
     }
-    for (uint32_t c = 0x4E00; c <= 0x4FFF; c++) {
+    for (uint32_t c = 0x4E00; c <= 0x9FFF; c++) {
         characters.push_back(c);
     }
 

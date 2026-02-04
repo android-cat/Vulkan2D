@@ -125,7 +125,8 @@ void TextRenderer::DrawText(SpriteBatch* batch, Font* font, const std::string& t
 
     Texture* atlas = font->GetAtlasTexture();
     float x = position.x + offsetX;
-    float y = position.y;
+    // position.y は行の上端を基準とする
+    float y = position.y + font->GetAscent() * scale;
 
     // 各文字を描画
     for (uint32_t codepoint : codepoints) {
@@ -188,7 +189,8 @@ void TextRenderer::DrawText(SpriteBatch* batch, Font* font, const std::wstring& 
 
     Texture* atlas = font->GetAtlasTexture();
     float x = position.x + offsetX;
-    float y = position.y;
+    // position.y は行の上端を基準とする
+    float y = position.y + font->GetAscent() * scale;
 
     // 各文字を描画
     for (wchar_t c : text) {

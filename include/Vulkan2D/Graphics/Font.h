@@ -36,6 +36,8 @@ public:
     Texture* GetAtlasTexture() const { return m_AtlasTexture.get(); }
     uint32_t GetFontSize() const { return m_FontSize; }
     float GetLineHeight() const { return m_LineHeight; }
+    float GetAscent() const { return m_Ascent; }
+    float GetDescent() const { return m_Descent; }
 
     // Calculate text dimensions
     glm::vec2 MeasureText(const std::string& text) const;
@@ -54,6 +56,8 @@ private:
     
     uint32_t m_FontSize;
     float m_LineHeight;
+    float m_Ascent = 0.0f;
+    float m_Descent = 0.0f;
     uint32_t m_AtlasWidth = 0;
     uint32_t m_AtlasHeight = 0;
 };

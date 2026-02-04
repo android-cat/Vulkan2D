@@ -185,21 +185,15 @@ void Camera2D::UpdateViewMatrix() {
 /**
  * @brief 投影行列を更新
  * 
- * 正射影行列を作成し、Vulkan用にY軸を反転する
- * ワールド座標系: Y+が上
- * Vulkan NDC: Y+が下
+ * 正射影行列を作成する
+ * ワールド座標系: 左上が(0,0)、Y+が下
+ * Vulkan NDC: 上端が-1、下端が+1（Y+が下）
  */
 void Camera2D::UpdateProjectionMatrix() {
-    // 2D用の正射影行列を作成
-    // Y+が上のワールド座標系を使用
-    float halfWidth = m_ViewportWidth / 2.0f;
-    float halfHeight = m_ViewportHeight / 2.0f;
-    
-    // 正射影行列（left, right, bottom, top, near, far）
-    m_ProjectionMatrix = glm::ortho(-halfWidth, halfWidth, halfHeight, -halfHeight, -1.0f, 1.0f);
-    
-    // Vulkan用にY軸を反転（Vulkan NDCはY+が下向き）
-    m_ProjectionMatrix[1][1] *= -1.0f;
+     // 2D用の正射影行列を作成
+     // 正射影行列（left, right, bottom, top, near, far）
+     // 左上原点・ピクセル座標に合わせる（Y+は下方向）
+     m_ProjectionMatrix = glm::ortho(0.0f, m_ViewportWidth, 0.0f, m_ViewportHeight, -1.0f, 1.0f);
     
     m_ProjectionDirty = false;
 }

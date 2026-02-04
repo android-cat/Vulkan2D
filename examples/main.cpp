@@ -27,7 +27,7 @@ int main() {
         V2D::Engine engine(config);
 
         // === カメラ設定 ===
-        // 画面中央がワールド座標(0,0)になる2Dカメラ
+        // 左上が原点(0,0)、右がX+、下がY+の座標系
         V2D::Camera2D camera(
             static_cast<float>(config.windowConfig.width),
             static_cast<float>(config.windowConfig.height)
@@ -81,7 +81,7 @@ int main() {
             V2D::Sprite sampleSprite;
             sampleSprite.SetTexture(sampleTexture);
             sampleSprite.SetSize(glm::vec2(200.0f, 200.0f));  // 200x200のサイズで表示
-            sampleSprite.transform.position = glm::vec2(400.0f, 0.0f);  // 右側に配置
+            sampleSprite.transform.position = glm::vec2(1000.0f, 100.0f);  // 右上に配置
             sampleSprite.transform.origin = glm::vec2(100.0f, 100.0f);
             sprites.push_back(sampleSprite);
         }
@@ -91,8 +91,8 @@ int main() {
             V2D::Sprite sprite;
             sprite.SetSize(glm::vec2(100.0f, 100.0f));  // サイズ 100x100
             sprite.transform.position = glm::vec2(
-                -400.0f + i * 90.0f,                    // X: 左から右へ配置
-                -200.0f + std::sin(i * 0.5f) * 100.0f   // Y: 波形に配置
+                50.0f + i * 110.0f,                     // X: 左から右へ配置
+                300.0f + std::sin(i * 0.5f) * 80.0f     // Y: 波形に配置
             );
             sprite.transform.origin = glm::vec2(50.0f, 50.0f);  // 中心を回転の原点に
             
@@ -140,10 +140,10 @@ int main() {
                 V2D::InputManager* input = engine.GetInput();
                 
                 // === カメラ移動（WASD） ===
-                // W:上, S:下, A:左, D:右
+                // W:上, S:下, A:左, D:右（Y+は下方向）
                 glm::vec2 cameraMove(0.0f);
-                if (input->IsKeyDown(V2D::Key::W)) cameraMove.y += 1.0f;  // 上
-                if (input->IsKeyDown(V2D::Key::S)) cameraMove.y -= 1.0f;  // 下
+                if (input->IsKeyDown(V2D::Key::W)) cameraMove.y -= 1.0f;  // 上
+                if (input->IsKeyDown(V2D::Key::S)) cameraMove.y += 1.0f;  // 下
                 if (input->IsKeyDown(V2D::Key::A)) cameraMove.x -= 1.0f;  // 左
                 if (input->IsKeyDown(V2D::Key::D)) cameraMove.x += 1.0f;  // 右
                 
@@ -173,7 +173,7 @@ int main() {
                     // 回転アニメーション
                     sprites[i].transform.rotation = time + i * 0.3f;
                     // 上下の波形アニメーション
-                    sprites[i].transform.position.y = -200.0f + std::sin(time * 2.0f + i * 0.5f) * 100.0f;
+                    sprites[i].transform.position.y = 300.0f + std::sin(time * 2.0f + i * 0.5f) * 80.0f;
                 }
                 
                 // ウィンドウリサイズに対応
@@ -198,7 +198,7 @@ int main() {
                 
                 // === 追加の矩形を直接描画 ===
                 // テクスチャなし（nullptr）で黄色の半透明矩形
-                batch->Draw(nullptr, glm::vec2(0.0f, 200.0f), glm::vec2(200.0f, 50.0f),
+                batch->Draw(nullptr, glm::vec2(100.0f, 150.0f), glm::vec2(200.0f, 50.0f),
                            glm::vec4(1.0f, 1.0f, 0.0f, 0.8f));
 
                 // === テキスト描画 ===
@@ -206,29 +206,29 @@ int main() {
                     // FPS表示（左上）
                     std::string fpsText = "FPS: " + std::to_string(static_cast<int>(engine.GetFPS()));
                     textRenderer.DrawText(batch, font.get(), fpsText,
-                                         glm::vec2(-600.0f, 320.0f),
+                                         glm::vec2(10.0f, 10.0f),
                                          glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
                     // 操作説明
                     textRenderer.DrawText(batch, font.get(), "WASD: Move Camera",
-                                         glm::vec2(-600.0f, 280.0f),
+                                         glm::vec2(10.0f, 50.0f),
                                          glm::vec4(0.8f, 0.8f, 0.8f, 1.0f), 0.7f);
                     
                     textRenderer.DrawText(batch, font.get(), "Mouse Wheel: Zoom",
-                                         glm::vec2(-600.0f, 250.0f),
+                                         glm::vec2(10.0f, 80.0f),
                                          glm::vec4(0.8f, 0.8f, 0.8f, 1.0f), 0.7f);
 
                     textRenderer.DrawText(batch, font.get(), "ESC: Exit",
-                                         glm::vec2(-600.0f, 220.0f),
+                                         glm::vec2(10.0f, 110.0f),
                                          glm::vec4(0.8f, 0.8f, 0.8f, 1.0f), 0.7f);
                     
                     textRenderer.DrawText(batch, font.get(), "Space: Play SFX",
-                                         glm::vec2(-600.0f, 190.0f),
+                                         glm::vec2(10.0f, 140.0f),
                                          glm::vec4(0.8f, 0.8f, 0.8f, 1.0f), 0.7f);
 
                     // タイトル（影付き、中央揃え）
                     textRenderer.DrawTextWithShadow(batch, font.get(), "Vulkan2D Engine",
-                                                   glm::vec2(0.0f, -300.0f),
+                                                   glm::vec2(640.0f, 50.0f),
                                                    glm::vec4(1.0f, 0.9f, 0.2f, 1.0f),   // 金色
                                                    glm::vec4(0.0f, 0.0f, 0.0f, 0.5f),   // 半透明黒影
                                                    glm::vec2(3.0f, 3.0f),               // 影オフセット
@@ -236,33 +236,33 @@ int main() {
 
                     // サブタイトル
                     textRenderer.DrawText(batch, font.get(), "Hello World!",
-                                         glm::vec2(0.0f, -250.0f),
+                                         glm::vec2(640.0f, 100.0f),
                                          glm::vec4(0.5f, 1.0f, 0.5f, 1.0f),
                                          1.0f, V2D::TextAlign::Center);
 
                     // === 日本語テキストテスト ===
                     // ひらがなテスト
                     textRenderer.DrawText(batch, font.get(), "ひらがな: こんにちは世界",
-                                         glm::vec2(0.0f, 100.0f),
+                                         glm::vec2(640.0f, 450.0f),
                                          glm::vec4(1.0f, 0.5f, 0.8f, 1.0f),
                                          1.0f, V2D::TextAlign::Center);
                     
                     // カタカナテスト
                     textRenderer.DrawText(batch, font.get(), "カタカナ: ヴァルカン エンジン",
-                                         glm::vec2(0.0f, 140.0f),
+                                         glm::vec2(640.0f, 490.0f),
                                          glm::vec4(0.5f, 0.8f, 1.0f, 1.0f),
                                          1.0f, V2D::TextAlign::Center);
                     
                     // 漢字テスト
                     textRenderer.DrawText(batch, font.get(), "漢字: 日本語描画成功",
-                                         glm::vec2(0.0f, 180.0f),
+                                         glm::vec2(640.0f, 530.0f),
                                          glm::vec4(1.0f, 1.0f, 0.5f, 1.0f),
                                          1.0f, V2D::TextAlign::Center);
                     
                     // 混合テスト（影付き）
                     textRenderer.DrawTextWithShadow(batch, font.get(), 
                                                    "混合テスト: Vulkan2Dで日本語OK!",
-                                                   glm::vec2(0.0f, 230.0f),
+                                                   glm::vec2(640.0f, 580.0f),
                                                    glm::vec4(0.2f, 1.0f, 0.5f, 1.0f),
                                                    glm::vec4(0.0f, 0.0f, 0.0f, 0.7f),
                                                    glm::vec2(2.0f, 2.0f),
@@ -272,13 +272,13 @@ int main() {
                     if (hasSampleTexture) {
                         textRenderer.DrawText(batch, font.get(), 
                                              "[OK] sample.png loaded ->",
-                                             glm::vec2(200.0f, -150.0f),
+                                             glm::vec2(750.0f, 150.0f),
                                              glm::vec4(0.5f, 1.0f, 0.5f, 1.0f),
                                              0.8f);
                     } else {
                         textRenderer.DrawText(batch, font.get(), 
                                              "[SKIP] sample.png not found",
-                                             glm::vec2(-600.0f, 150.0f),
+                                             glm::vec2(10.0f, 650.0f),
                                              glm::vec4(1.0f, 0.5f, 0.5f, 1.0f),
                                              0.8f);
                     }
