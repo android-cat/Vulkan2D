@@ -159,7 +159,7 @@ private:
     Camera2D* m_CurrentCamera = nullptr;
     uint32_t m_MaxSprites;
     bool m_IsBatching = false;
-    bool m_EnableTextureSorting = true;  // テクスチャソート有効化
+    bool m_EnableTextureSorting = false;  // テクスチャソート有効化（デフォルト無効: 描画順序を維持）
     bool m_UseInstancing = true;         // インスタンシング有効化
     
     // 統計
