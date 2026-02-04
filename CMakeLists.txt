@@ -220,7 +220,11 @@ install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/shaders/
 # Example application
 option(BUILD_EXAMPLES "Build example applications" ON)
 if(BUILD_EXAMPLES)
-    add_executable(Example examples/main.cpp)
+    if(WIN32)
+        add_executable(Example WIN32 examples/main.cpp)
+    else()
+        add_executable(Example examples/main.cpp)
+    endif()
     target_link_libraries(Example PRIVATE Vulkan2D)
     
     # Copy shaders to example output directory
