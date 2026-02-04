@@ -11,6 +11,7 @@ class VulkanContext;
 class SpriteBatch;
 class Camera2D;
 class Window;
+struct BatchStatistics;
 
 class Renderer2D {
 public:
@@ -31,6 +32,9 @@ public:
     void SetClearColor(float r, float g, float b, float a = 1.0f);
 
     void OnWindowResize(int width, int height);
+    
+    // 描画統計情報を取得
+    const BatchStatistics& GetBatchStatistics() const;
 
 private:
     void CreateCommandBuffers();

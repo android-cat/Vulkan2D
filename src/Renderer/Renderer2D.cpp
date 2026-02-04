@@ -251,4 +251,8 @@ void Renderer2D::RecreateSwapChain() {
     m_ImagesInFlight.resize(m_Context->GetImageCount(), VK_NULL_HANDLE);
 }
 
+const BatchStatistics& Renderer2D::GetBatchStatistics() const {
+    return m_SpriteBatch->GetStatistics();
+}
+
 } // namespace V2D
