@@ -75,8 +75,8 @@ Engine::~Engine() {
  * ゲームループの流れ:
  * 1. デルタタイム計算
  * 2. FPS計算
- * 3. イベントポーリング
- * 4. 入力更新
+ * 3. 入力履歴更新（前フレームの状態を保存）
+ * 4. イベントポーリング（このフレームの入力を受信）
  * 5. ユーザー更新処理
  * 6. 描画開始
  * 7. ユーザー描画処理
@@ -103,11 +103,11 @@ void Engine::Run(UpdateCallback onUpdate, RenderCallback onRender) {
             frameCount = 0;
         }
         
+        // 入力状態を更新（前フレームの状態を保存してからイベントを受信）
+        m_Input->Update();
+        
         // ウィンドウイベントをポーリング
         m_Window->PollEvents();
-        
-        // 入力状態を更新
-        m_Input->Update();
         
         // オーディオを更新（フェード処理など）
         m_Audio->Update(m_DeltaTime);
