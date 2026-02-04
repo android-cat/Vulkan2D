@@ -13,6 +13,61 @@
 
 namespace V2D {
 
+// UTF-8文字列からUnicodeコードポイントを抽出するヘルパー関数
+static std::vector<uint32_t> Utf8ToCodepoints(const std::string& utf8String) {
+    std::vector<uint32_t> codepoints;
+    size_t i = 0;
+    while (i < utf8String.length()) {
+        uint32_t codepoint = 0;
+        uint8_t c = static_cast<uint8_t>(utf8String[i]);
+        
+        if ((c & 0x80) == 0) {
+            // 1バイト文字 (0xxxxxxx)
+            codepoint = c;
+            i += 1;
+        } else if ((c & 0xE0) == 0xC0) {
+            // 2バイト文字 (110xxxxx 10xxxxxx)
+            if (i + 1 < utf8String.length()) {
+                codepoint = ((c & 0x1F) << 6) |
+                           (static_cast<uint8_t>(utf8String[i + 1]) & 0x3F);
+                i += 2;
+            } else {
+                i++; // 不正なシーケンス
+            }
+        } else if ((c & 0xF0) == 0xE0) {
+            // 3バイト文字 (1110xxxx 10xxxxxx 10xxxxxx)
+            if (i + 2 < utf8String.length()) {
+                codepoint = ((c & 0x0F) << 12) |
+                           ((static_cast<uint8_t>(utf8String[i + 1]) & 0x3F) << 6) |
+                           (static_cast<uint8_t>(utf8String[i + 2]) & 0x3F);
+                i += 3;
+            } else {
+                i++; // 不正なシーケンス
+            }
+        } else if ((c & 0xF8) == 0xF0) {
+            // 4バイト文字 (11110xxx 10xxxxxx 10xxxxxx 10xxxxxx)
+            if (i + 3 < utf8String.length()) {
+                codepoint = ((c & 0x07) << 18) |
+                           ((static_cast<uint8_t>(utf8String[i + 1]) & 0x3F) << 12) |
+                           ((static_cast<uint8_t>(utf8String[i + 2]) & 0x3F) << 6) |
+                           (static_cast<uint8_t>(utf8String[i + 3]) & 0x3F);
+                i += 4;
+            } else {
+                i++; // 不正なシーケンス
+            }
+        } else {
+            // 不正なUTF-8シーケンス
+            i++;
+            continue;
+        }
+        
+        if (codepoint > 0) {
+            codepoints.push_back(codepoint);
+        }
+    }
+    return codepoints;
+}
+
 /**
  * @brief テキストレンダラーのコンストラクタ
  * @param context Vulkanコンテキスト
@@ -42,16 +97,27 @@ void TextRenderer::DrawText(SpriteBatch* batch, Font* font, const std::string& t
                             float scale, TextAlign align) {
     if (!font || text.empty()) return;
 
+    // UTF-8文字列をコードポイント列に変換
+    std::vector<uint32_t> codepoints = Utf8ToCodepoints(text);
+
     // アライメントに応じたオフセットを計算
-    glm::vec2 textSize = font->MeasureText(text) * scale;
-    float offsetX = 0.0f;
+    float textWidth = 0.0f;
+    for (uint32_t codepoint : codepoints) {
+        const GlyphInfo* glyph = font->GetGlyph(codepoint);
+        if (glyph) {
+            textWidth += glyph->advance * scale;
+        } else {
+            textWidth += font->GetFontSize() * scale * 0.5f;
+        }
+    }
     
+    float offsetX = 0.0f;
     switch (align) {
         case TextAlign::Center:
-            offsetX = -textSize.x / 2.0f;  // 中央揃え
+            offsetX = -textWidth / 2.0f;  // 中央揃え
             break;
         case TextAlign::Right:
-            offsetX = -textSize.x;  // 右揃え
+            offsetX = -textWidth;  // 右揃え
             break;
         default:
             break;  // 左揃えはオフセット0
@@ -62,8 +128,8 @@ void TextRenderer::DrawText(SpriteBatch* batch, Font* font, const std::string& t
     float y = position.y;
 
     // 各文字を描画
-    for (char c : text) {
-        const GlyphInfo* glyph = font->GetGlyph(static_cast<uint32_t>(c));
+    for (uint32_t codepoint : codepoints) {
+        const GlyphInfo* glyph = font->GetGlyph(codepoint);
         if (!glyph) {
             // 未知の文字はスペースとして扱う
             x += font->GetFontSize() * scale * 0.5f;

@@ -29,6 +29,8 @@ Vulkan 1.3を使用した2Dゲーム開発用ライブラリです。
 
 ## ビルド方法
 
+### 開発用ビルド（例を含む）
+
 ```bash
 # ビルドディレクトリの作成
 mkdir build
@@ -42,6 +44,71 @@ cmake --build . --config Release
 
 # 実行
 ./Release/Example.exe
+```
+
+### ライブラリとしてインストール
+
+```bash
+# ビルドディレクトリで
+cmake --build . --config Release
+cmake --install . --prefix C:/Vulkan2D_install
+```
+
+インストール後、以下のファイルが配置されます：
+- `lib/Vulkan2D.lib` - ライブラリファイル
+- `include/Vulkan2D/` - ヘッダーファイル
+- `lib/cmake/Vulkan2D/` - CMake設定ファイル
+- `share/Vulkan2D/shaders/` - シェーダーファイル
+
+## 他のプロジェクトでの使用方法
+
+### 方法1: インストール済みライブラリを使用（推奨）
+
+```cmake
+cmake_minimum_required(VERSION 3.20)
+project(MyGame VERSION 1.0.0 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Vulkan2Dのインストールパスを指定
+set(CMAKE_PREFIX_PATH "C:/Vulkan2D_install")
+
+# Vulkan2Dを検索
+find_package(Vulkan2D REQUIRED)
+
+# 実行ファイルを作成
+add_executable(MyGame main.cpp)
+
+# Vulkan2Dをリンク
+target_link_libraries(MyGame PRIVATE Vulkan2D::Vulkan2D)
+```
+
+ビルド時：
+```bash
+mkdir build
+cd build
+cmake .. -DCMAKE_PREFIX_PATH=C:/Vulkan2D_install
+cmake --build . --config Release
+```
+
+### 方法2: サブディレクトリとして使用
+
+```cmake
+cmake_minimum_required(VERSION 3.20)
+project(MyGame VERSION 1.0.0 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# 例のビルドを無効化
+set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+
+# Vulkan2Dをサブディレクトリとして追加
+add_subdirectory(path/to/Vulkan2D)
+
+add_executable(MyGame main.cpp)
+target_link_libraries(MyGame PRIVATE Vulkan2D)
 ```
 
 ## 使用例

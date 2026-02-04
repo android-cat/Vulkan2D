@@ -109,7 +109,8 @@ add_library(Vulkan2D STATIC ${VULKAN2D_SOURCES} ${VULKAN2D_HEADERS})
 
 target_include_directories(Vulkan2D 
     PUBLIC 
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${stb_SOURCE_DIR}
@@ -119,9 +120,10 @@ target_include_directories(Vulkan2D
 target_link_libraries(Vulkan2D 
     PUBLIC 
         Vulkan::Vulkan
-        glfw
-        glm::glm
-        freetype
+        $<BUILD_INTERFACE:glfw>
+        $<BUILD_INTERFACE:glm::glm>
+    PRIVATE
+        $<BUILD_INTERFACE:freetype>
 )
 
 target_compile_definitions(Vulkan2D
@@ -158,6 +160,62 @@ if(GLSLC)
     add_custom_target(Shaders ALL DEPENDS ${SHADER_OUTPUTS})
     add_dependencies(Vulkan2D Shaders)
 endif()
+
+# Install settings
+include(GNUInstallDirs)
+
+install(TARGETS Vulkan2D
+    EXPORT Vulkan2DTargets
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+# Export without dependencies (they will be handled in Config file)
+set_target_properties(Vulkan2D PROPERTIES
+    EXPORT_NAME Vulkan2D
+    VERSION ${PROJECT_VERSION}
+    SOVERSION 1
+)
+
+# CMAKE_INSTALL_DEFAULT_COMPONENT_NAME is used to avoid exporting dependencies
+set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME Vulkan2D_Runtime)
+
+install(EXPORT Vulkan2DTargets
+    FILE Vulkan2DTargets.cmake
+    NAMESPACE Vulkan2D::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Vulkan2D
+    EXPORT_LINK_INTERFACE_LIBRARIES
+)
+
+unset(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME)
+
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/CMake/Vulkan2DConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/Vulkan2DConfig.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Vulkan2D
+)
+
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/Vulkan2DConfigVersion.cmake
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY AnyNewerVersion
+)
+
+install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/Vulkan2DConfig.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/Vulkan2DConfigVersion.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Vulkan2D
+)
+
+# Install shaders
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/shaders/
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/Vulkan2D/shaders
+)
 
 # Example application
 option(BUILD_EXAMPLES "Build example applications" ON)

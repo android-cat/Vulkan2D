@@ -14,6 +14,61 @@
 
 namespace V2D {
 
+// UTF-8文字列からUnicodeコードポイントを抽出するヘルパー関数
+static std::vector<uint32_t> Utf8ToCodepoints(const std::string& utf8String) {
+    std::vector<uint32_t> codepoints;
+    size_t i = 0;
+    while (i < utf8String.length()) {
+        uint32_t codepoint = 0;
+        uint8_t c = static_cast<uint8_t>(utf8String[i]);
+        
+        if ((c & 0x80) == 0) {
+            // 1バイト文字 (0xxxxxxx)
+            codepoint = c;
+            i += 1;
+        } else if ((c & 0xE0) == 0xC0) {
+            // 2バイト文字 (110xxxxx 10xxxxxx)
+            if (i + 1 < utf8String.length()) {
+                codepoint = ((c & 0x1F) << 6) |
+                           (static_cast<uint8_t>(utf8String[i + 1]) & 0x3F);
+                i += 2;
+            } else {
+                i++; // 不正なシーケンス
+            }
+        } else if ((c & 0xF0) == 0xE0) {
+            // 3バイト文字 (1110xxxx 10xxxxxx 10xxxxxx)
+            if (i + 2 < utf8String.length()) {
+                codepoint = ((c & 0x0F) << 12) |
+                           ((static_cast<uint8_t>(utf8String[i + 1]) & 0x3F) << 6) |
+                           (static_cast<uint8_t>(utf8String[i + 2]) & 0x3F);
+                i += 3;
+            } else {
+                i++; // 不正なシーケンス
+            }
+        } else if ((c & 0xF8) == 0xF0) {
+            // 4バイト文字 (11110xxx 10xxxxxx 10xxxxxx 10xxxxxx)
+            if (i + 3 < utf8String.length()) {
+                codepoint = ((c & 0x07) << 18) |
+                           ((static_cast<uint8_t>(utf8String[i + 1]) & 0x3F) << 12) |
+                           ((static_cast<uint8_t>(utf8String[i + 2]) & 0x3F) << 6) |
+                           (static_cast<uint8_t>(utf8String[i + 3]) & 0x3F);
+                i += 4;
+            } else {
+                i++; // 不正なシーケンス
+            }
+        } else {
+            // 不正なUTF-8シーケンス
+            i++;
+            continue;
+        }
+        
+        if (codepoint > 0) {
+            codepoints.push_back(codepoint);
+        }
+    }
+    return codepoints;
+}
+
 Font::Font(VulkanContext* context, const std::string& fontPath, uint32_t fontSize)
     : m_Context(context), m_FontSize(fontSize) {
     
@@ -184,8 +239,11 @@ glm::vec2 Font::MeasureText(const std::string& text) const {
     float width = 0.0f;
     float maxHeight = 0.0f;
 
-    for (char c : text) {
-        const GlyphInfo* glyph = GetGlyph(static_cast<uint32_t>(c));
+    // UTF-8文字列をコードポイント列に変換
+    std::vector<uint32_t> codepoints = Utf8ToCodepoints(text);
+    
+    for (uint32_t codepoint : codepoints) {
+        const GlyphInfo* glyph = GetGlyph(codepoint);
         if (glyph) {
             width += glyph->advance;
             maxHeight = std::max(maxHeight, static_cast<float>(glyph->size.y));

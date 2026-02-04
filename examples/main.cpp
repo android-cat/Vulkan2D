@@ -58,8 +58,33 @@ int main() {
             }
         }
 
+        // === テスト用テクスチャ読み込み ===
+        std::shared_ptr<V2D::Texture> sampleTexture;
+        bool hasSampleTexture = false;
+        try {
+            // sample.pngを読み込み
+            sampleTexture = std::make_shared<V2D::Texture>(
+                engine.GetVulkanContext(),
+                "sample.png"
+            );
+            hasSampleTexture = true;
+            std::cout << "成功: sample.png を読み込みました" << std::endl;
+        } catch (const std::exception& e) {
+            std::cerr << "注意: sample.png の読み込みをスキップ: " << e.what() << std::endl;
+        }
+
         // === スプライト作成 ===
         std::vector<V2D::Sprite> sprites;
+        
+        // sample.pngのスプライト（読み込めた場合のみ）
+        if (hasSampleTexture) {
+            V2D::Sprite sampleSprite;
+            sampleSprite.SetTexture(sampleTexture);
+            sampleSprite.SetSize(glm::vec2(200.0f, 200.0f));  // 200x200のサイズで表示
+            sampleSprite.transform.position = glm::vec2(400.0f, 0.0f);  // 右側に配置
+            sampleSprite.transform.origin = glm::vec2(100.0f, 100.0f);
+            sprites.push_back(sampleSprite);
+        }
         
         // 虹色の四角形を10個作成
         for (int i = 0; i < 10; i++) {
@@ -214,6 +239,49 @@ int main() {
                                          glm::vec2(0.0f, -250.0f),
                                          glm::vec4(0.5f, 1.0f, 0.5f, 1.0f),
                                          1.0f, V2D::TextAlign::Center);
+
+                    // === 日本語テキストテスト ===
+                    // ひらがなテスト
+                    textRenderer.DrawText(batch, font.get(), "ひらがな: こんにちは世界",
+                                         glm::vec2(0.0f, 100.0f),
+                                         glm::vec4(1.0f, 0.5f, 0.8f, 1.0f),
+                                         1.0f, V2D::TextAlign::Center);
+                    
+                    // カタカナテスト
+                    textRenderer.DrawText(batch, font.get(), "カタカナ: ヴァルカン エンジン",
+                                         glm::vec2(0.0f, 140.0f),
+                                         glm::vec4(0.5f, 0.8f, 1.0f, 1.0f),
+                                         1.0f, V2D::TextAlign::Center);
+                    
+                    // 漢字テスト
+                    textRenderer.DrawText(batch, font.get(), "漢字: 日本語描画成功",
+                                         glm::vec2(0.0f, 180.0f),
+                                         glm::vec4(1.0f, 1.0f, 0.5f, 1.0f),
+                                         1.0f, V2D::TextAlign::Center);
+                    
+                    // 混合テスト（影付き）
+                    textRenderer.DrawTextWithShadow(batch, font.get(), 
+                                                   "混合テスト: Vulkan2Dで日本語OK!",
+                                                   glm::vec2(0.0f, 230.0f),
+                                                   glm::vec4(0.2f, 1.0f, 0.5f, 1.0f),
+                                                   glm::vec4(0.0f, 0.0f, 0.0f, 0.7f),
+                                                   glm::vec2(2.0f, 2.0f),
+                                                   0.9f, V2D::TextAlign::Center);
+
+                    // sample.pngの状態表示
+                    if (hasSampleTexture) {
+                        textRenderer.DrawText(batch, font.get(), 
+                                             "[OK] sample.png loaded ->",
+                                             glm::vec2(200.0f, -150.0f),
+                                             glm::vec4(0.5f, 1.0f, 0.5f, 1.0f),
+                                             0.8f);
+                    } else {
+                        textRenderer.DrawText(batch, font.get(), 
+                                             "[SKIP] sample.png not found",
+                                             glm::vec2(-600.0f, 150.0f),
+                                             glm::vec4(1.0f, 0.5f, 0.5f, 1.0f),
+                                             0.8f);
+                    }
                 }
                 
                 // スプライトバッチ終了
